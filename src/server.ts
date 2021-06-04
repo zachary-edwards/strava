@@ -2,7 +2,9 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import { authorize, getAccessToken, getAtheleteActivities, refreshAccessToken, setRequestCode } from './services/strava'
+import { getAtheleteActivities } from './services/strava'
+import { readFile } from './services/filehelper'
+import { authorize, setRequestCode, refreshAccessToken } from './services/stravaAuthenticator'
 const app = express()
 app.use(helmet())
 app.use(cors())
@@ -30,9 +32,18 @@ app.get('/healthz', (req: express.Request, res: express.Response) => {
 
 app.get('/athlete', async (req: express.Request, res: express.Response) => {
   try {
-    await getAccessToken()
     const athleteActivites = await getAtheleteActivities()
     res.status(200).send(athleteActivites)
+  } catch (err) {
+    console.error(err)
+    res.status(err.status || 500).send(err.message || 'uh oh')
+  }
+})
+
+app.get('/file/:filename', async (req: express.Request, res: express.Response) => {
+  try {
+    const fileData = readFile(req.params.filename)
+    res.status(200).send(fileData)
   } catch (err) {
     console.error(err)
     res.status(err.status || 500).send(err.message || 'uh oh')
