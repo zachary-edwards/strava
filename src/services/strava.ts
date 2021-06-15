@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 import { AtheleteTokenRequest } from '../models/accessTokenRequest';
-import { getReducedGearIds } from '../util/util';
+import { getReducedGearIds, secondsToDhms } from '../util/util';
 import { fileExists, readFile, writeFile } from './filehelper';
 import { getAccessToken } from './stravaAuthenticator';
 
@@ -12,23 +12,18 @@ const getAthelete = async () => {
 
 }
 
-const getGearData = async () => {
+const getGearData = async (athlete, accessToken, gearIds) => {
   try {
-    const { athlete, accessToken } = await getAccessToken()
-    if (!fileExists(`${athlete.firstname}-gear`)) {
-      console.log('no file for athlete')
-      return;
-    }
-
-    const gearIds: string[] = readFile(`${athlete.firstname}-gear`)
-    gearIds.forEach(async gearId => {
-      var res = await axios(`${url}/gear/${gearId}`, {
+    const gearData = []
+    for (const gearId in gearIds) {
+      var res = await axios(`${url}/gear/${gearIds[gearId]}`, {
         headers: {
           "Authorization": `Bearer ${accessToken}`
         }
       })
-      console.log(res.data)
-    })
+      gearData.push(res.data)
+    }
+    return gearData
   }
   catch (err) {
     console.error('Error getting gear data', err)
@@ -65,14 +60,19 @@ const getAtheleteActivities = async () => {
 
   gearIds = getReducedGearIds(totalActivites)
 
+  await writeFile(`${athlete.firstname}-gear`, gearIds)
+  const gearData = await getGearData(athlete, accessToken, gearIds)
+  let dataToReturn = []
+
   gearIds.forEach(gearId => {
+    let gearDetails = gearData.filter(gearDetail => gearDetail.id === gearId)[0]
     let activitiesPerGearId = totalActivites.filter(activity => activity.gear_id === gearId)
     let movingTime = activitiesPerGearId.reduce((a, b) => a + b.moving_time, 0)
-    console.log('Moving time?', movingTime, 'GearId', gearId)
+    let distance = (gearDetails.distance * 3.28084) / 5280
+    dataToReturn.push({gearName: gearDetails.name, distance: `${distance} miles`, movingTime: secondsToDhms(movingTime)})
   })
 
-  writeFile(`${athlete.firstname}-gear`, gearIds)
-  return totalActivites
+  return dataToReturn
 }
 
 export { getAtheleteActivities, getGearData }

@@ -19,7 +19,7 @@ app.get('/', async (req: express.Request, res: express.Response) => {
       authorize(res)
     else {
       setRequestCode(req.query.code as string)
-      res.redirect('/gear')
+      res.redirect('/athlete')
     }
   } catch (err) {
     console.error(err.message)
@@ -42,7 +42,7 @@ app.get('/athlete', async (req: express.Request, res: express.Response) => {
 
 app.get('/gear', async (req: express.Request, res: express.Response) => {
   try {
-    const athleteActivites = await getGearData()
+    //const athleteActivites = await getGearData()
     res.status(200).send('Ok')
   } catch (err) {
     console.error(err)
