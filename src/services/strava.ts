@@ -5,11 +5,34 @@ import { fileExists, readFile, writeFile } from './filehelper';
 import { getAccessToken } from './stravaAuthenticator';
 
 const url = "https://www.strava.com/api/v3";
-const gearIds = []
+let gearIds = []
 
 const getAthelete = async () => {
   await getAccessToken()
 
+}
+
+const getGearData = async () => {
+  try {
+    const { athlete, accessToken } = await getAccessToken()
+    if (!fileExists(`${athlete.firstname}-gear`)) {
+      console.log('no file for athlete')
+      return;
+    }
+
+    const gearIds: string[] = readFile(`${athlete.firstname}-gear`)
+    gearIds.forEach(async gearId => {
+      var res = await axios(`${url}/gear/${gearId}`, {
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
+        }
+      })
+      console.log(res.data)
+    })
+  }
+  catch (err) {
+    console.error('Error getting gear data', err)
+  }
 }
 
 const getAtheleteActivities = async () => {
@@ -37,14 +60,19 @@ const getAtheleteActivities = async () => {
     }
     while (page < 50 && activities.length === 30)
     totalActivites = totalActivites.flat()
-    writeFile(athlete.firstname.toLowerCase(), totalActivites)
+    writeFile(athlete.firstname, totalActivites)
   }
 
-  getReducedGearIds(totalActivites)
+  gearIds = getReducedGearIds(totalActivites)
 
+  gearIds.forEach(gearId => {
+    let activitiesPerGearId = totalActivites.filter(activity => activity.gear_id === gearId)
+    let movingTime = activitiesPerGearId.reduce((a, b) => a + b.moving_time, 0)
+    console.log('Moving time?', movingTime, 'GearId', gearId)
+  })
+
+  writeFile(`${athlete.firstname}-gear`, gearIds)
   return totalActivites
 }
 
-
-
-export { getAtheleteActivities }
+export { getAtheleteActivities, getGearData }

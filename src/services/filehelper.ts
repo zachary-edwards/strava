@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 
-const formatFileName = (fileName?: string) => `./files/${fileName ?? "test"}.txt`
+const formatFileName = (fileName?: string) => `./files/${fileName ?? "test"}.txt`.toLowerCase();
 
-const fileExists = (fileName: string) => fs.existsSync(formatFileName(fileName.toLowerCase()))
+const fileExists = (fileName: string) => fs.existsSync(formatFileName(fileName))
 
 const readFile = (fileName?: string): any | undefined => {
   if (fileExists(fileName)) {

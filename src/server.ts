@@ -2,7 +2,7 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import { getAtheleteActivities } from './services/strava'
+import { getAtheleteActivities, getGearData } from './services/strava'
 import { readFile } from './services/filehelper'
 import { authorize, setRequestCode, refreshAccessToken } from './services/stravaAuthenticator'
 const app = express()
@@ -19,7 +19,7 @@ app.get('/', async (req: express.Request, res: express.Response) => {
       authorize(res)
     else {
       setRequestCode(req.query.code as string)
-      res.redirect('/athlete')
+      res.redirect('/gear')
     }
   } catch (err) {
     console.error(err.message)
@@ -34,6 +34,16 @@ app.get('/athlete', async (req: express.Request, res: express.Response) => {
   try {
     const athleteActivites = await getAtheleteActivities()
     res.status(200).send(athleteActivites)
+  } catch (err) {
+    console.error(err)
+    res.status(err.status || 500).send(err.message || 'uh oh')
+  }
+})
+
+app.get('/gear', async (req: express.Request, res: express.Response) => {
+  try {
+    const athleteActivites = await getGearData()
+    res.status(200).send('Ok')
   } catch (err) {
     console.error(err)
     res.status(err.status || 500).send(err.message || 'uh oh')
