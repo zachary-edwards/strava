@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import express from "express";
 import { AccessTokenRequest, AtheleteTokenRequest } from "../models/accessTokenRequest";
+import { requestCode } from "../server";
 
 const authUrl = 'https://www.strava.com/oauth/authorize'
 const url = "https://www.strava.com/api/v3";
@@ -9,10 +10,10 @@ const redirectUri = process.env.redirectUri
 const clientSecret = process.env.clientSecret
 const refreshToken = process.env.refreshToken
 let accessToken = ''
-let requestCode = ''
 
-const authorize = async (res: express.Response) => {
-  res.redirect(`${authUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&approval_prompt=auto&scope=activity:write,read_all,activity:read_all`)
+const authorize = async (req: express.Request, res: express.Response) => {
+  console.log("redirected")
+  res.redirect(`${authUrl}?client_id=${clientId}&redirect_uri=${redirectUri}${req.url}&response_type=code&approval_prompt=auto&scope=activity:write,read_all,activity:read_all`)
 }
 
 const getAccessToken = async (): Promise<{ accessToken: 'string', athlete: AtheleteTokenRequest }> => {
@@ -27,7 +28,8 @@ const getAccessToken = async (): Promise<{ accessToken: 'string', athlete: Athel
     method: 'POST',
     data: body
   }).catch(err => {
-    console.error('Error AccessToken token', err.message)
+    console.error('Error while getting AccessToken', err.message)
+    throw err
   }) as AxiosResponse
 
   return {
@@ -48,10 +50,9 @@ const refreshAccessToken = async () => {
     method: 'POST',
     data: body
   }).catch(err => {
-    console.error('Error refressing token', err.message)
+    console.error("Error while refreshing token", err.message)
+    throw err;
   }) as AxiosResponse
-
-  console.log('respone', resp)
 
   accessToken = resp.data["access_token"]
 }
@@ -70,14 +71,9 @@ const makeRequest = async (url: string) => {
     }
   } 
   catch (err) { 
-    console.error('Error making request to ' + url, err)
+    console.error('Error making request to ' + url, err.message)
+    throw err;
   }
 }
 
-const setRequestCode = (code: string) => {
-  requestCode = code
-  console.log(requestCode)
-}
-
-
-export { authorize, getAccessToken, makeRequest, refreshAccessToken, setRequestCode }
+export { authorize, getAccessToken, makeRequest, refreshAccessToken }

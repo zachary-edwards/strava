@@ -7,10 +7,6 @@ import { getAccessToken } from './stravaAuthenticator';
 const url = "https://www.strava.com/api/v3";
 let gearIds = []
 
-const getAthelete = async () => {
-  await getAccessToken()
-
-}
 
 const getGearData = async (athlete, accessToken, gearIds) => {
   try {
@@ -37,11 +33,11 @@ const getAtheleteActivities = async () => {
   let activities = []
   let page = 1;
 
-  if (fileExists(athlete.firstname)) {
-    console.log('getting file')
-    totalActivites = readFile(athlete.firstname)
-  }
-  else {
+  // if (fileExists(athlete.firstname)) {
+  //   console.log('getting file')
+  //   totalActivites = readFile(athlete.firstname)
+  // }
+  // else {
     console.log('making requests')
     do {
       var res = await axios(`${url}/athlete/activities?page=${page}&per_page=30`, {
@@ -56,7 +52,7 @@ const getAtheleteActivities = async () => {
     while (page < 50 && activities.length === 30)
     totalActivites = totalActivites.flat()
     writeFile(athlete.firstname, totalActivites)
-  }
+
 
   gearIds = getReducedGearIds(totalActivites)
 
