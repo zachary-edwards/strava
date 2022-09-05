@@ -6,3 +6,6 @@
 2. Store the athelete data in an S3 bucket or something similar
 3. As this is a personal project and I don't plan on making this request public I plan on running the code periodically to update said S3 bucket
 3. Maybe deploy this behind some security so I can run this on a cron, or maybe deploy on a raspberry pi that will peridocially (once a week) update the S3 bucket
+
+## NOTES
+* Access tokens are valid for 6 hours.
