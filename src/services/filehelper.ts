@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 
-const formatFileName = (fileName?: string) => `./files/${fileName ?? "test"}.txt`.toLowerCase();
+const formatFileName = (fileName?: string) => `./files/${fileName ?? "test"}.json`.toLowerCase();
 
 const fileExists = (fileName: string): boolean => fs.existsSync(formatFileName(fileName))
 

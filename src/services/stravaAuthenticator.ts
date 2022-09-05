@@ -8,7 +8,6 @@ const url = "https://www.strava.com/api/v3";
 const clientId = process.env.clientId;
 const redirectUri = process.env.redirectUri
 const clientSecret = process.env.clientSecret
-const refreshToken = process.env.refreshToken
 let accessToken = ''
 
 const authorize = async (req: express.Request, res: express.Response) => {
@@ -16,7 +15,7 @@ const authorize = async (req: express.Request, res: express.Response) => {
   res.redirect(`${authUrl}?client_id=${clientId}&redirect_uri=${redirectUri}${req.url}&response_type=code&approval_prompt=auto&scope=activity:write,read_all,activity:read_all`)
 }
 
-const getAccessToken = async (): Promise<{ accessToken: 'string', athlete: AtheleteTokenRequest }> => {
+const getAccessToken = async (): Promise<AccessTokenRequest> => {
   const body = {
     client_id: clientId,
     client_secret: clientSecret,
@@ -32,13 +31,10 @@ const getAccessToken = async (): Promise<{ accessToken: 'string', athlete: Athel
     throw err
   }) as AxiosResponse
 
-  return {
-    accessToken: resp.data.access_token,
-    athlete: resp.data.athlete
-  }
+  return resp.data
 }
 
-const refreshAccessToken = async () => {
+const refreshAccessToken = async (refreshToken: string) => {
   const body = {
     client_id: clientId,
     client_secret: clientSecret,
@@ -59,10 +55,10 @@ const refreshAccessToken = async () => {
 
 const makeRequest = async (url: string) => {
   try {
-    const { athlete, accessToken } = await getAccessToken();
+    const { athlete, access_token } = await getAccessToken();
     const res = await axios(url, {
       headers: {
-        "Authorization": `Bearer ${accessToken}`
+        "Authorization": `Bearer ${access_token}`
       }
     })
     return {

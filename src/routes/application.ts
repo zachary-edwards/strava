@@ -40,9 +40,9 @@ applicationRouter.get('/file/:filename', async (req: express.Request, res: expre
   }
 })
 
-applicationRouter.get('/token', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  await refreshAccessToken()
-  res.status(200).send('okie dokie')
-})
+// applicationRouter.get('/token', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+//   await refreshAccessToken()
+//   res.status(200).send('okie dokie')
+// })
 
 export { applicationRouter }

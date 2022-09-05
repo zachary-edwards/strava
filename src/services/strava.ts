@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 import { AtheleteTokenRequest } from '../models/accessTokenRequest';
+import { ACCESS_TOKEN } from '../server';
 import { getReducedGearIds, secondsToDhms } from '../util/util';
 import { fileExists, readFile, writeFile } from './filehelper';
 import { getAccessToken } from './stravaAuthenticator';
@@ -27,7 +28,7 @@ const getGearData = async (athlete, accessToken, gearIds) => {
 }
 
 const getAtheleteActivities = async () => {
-  const { athlete, accessToken } = await getAccessToken()
+  const { athlete, access_token } = ACCESS_TOKEN;
 
   let totalActivites = [];
   let activities = []
@@ -40,12 +41,14 @@ const getAtheleteActivities = async () => {
   // else {
     console.log('making requests')
     do {
+      console.log("uhoh", access_token)
       var res = await axios(`${url}/athlete/activities?page=${page}&per_page=30`, {
         headers: {
-          "Authorization": `Bearer ${accessToken}`
+          "Authorization": `Bearer ${access_token}`
         }
-      })
-      activities = res.data
+      }).catch((err) => console.error(err))
+      console.log(res)
+      activities = res && res.data
       totalActivites.push(activities)
       page++;
     }
@@ -57,7 +60,7 @@ const getAtheleteActivities = async () => {
   gearIds = getReducedGearIds(totalActivites)
 
   await writeFile(`${athlete.firstname}-gear`, gearIds)
-  const gearData = await getGearData(athlete, accessToken, gearIds)
+  const gearData = await getGearData(athlete, access_token, gearIds)
   let dataToReturn = []
 
   gearIds.forEach(gearId => {
